@@ -9,6 +9,6 @@ namespace Account.Domain.Interfaces
 {
     public interface IUserRepository
     {
-        Task<User> GetUserByNameAsync(string userName);
+        Task<UserLogin?> GetUserByUserNameAsync(string userName);
     }
 }

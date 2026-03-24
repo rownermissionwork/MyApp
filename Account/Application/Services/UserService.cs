@@ -18,7 +18,15 @@ namespace Account.Application.Services
         }
         public async Task<string> LoginAsync(UserLoginRequest request)
         {
-            return "";
+            try
+            {
+                var result = await _userRepository.GetUserByUserNameAsync(request.UserName);
+                return "";
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }
