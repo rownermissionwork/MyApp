@@ -15,6 +15,7 @@ namespace Account.Domain.Entities
         public int LoginID { get; set; }
         public int UserID { get; set; }
         public string ? UserName { get; set; }
+        public required string  PasswordHash { get; set; }
         public string? DeviceID { get; set; }
         public DateTime? LastLogin { get; set; }
         public int FailedAttempts { get; set; }

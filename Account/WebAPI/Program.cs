@@ -1,48 +1,79 @@
 using Account.Application.Interfaces;
 using Account.Application.Services;
 using Account.Domain.Interfaces;
+using Account.Infrastructure;
 using Account.Infrastructure.Persistence;
 using Account.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+internal class Program
+{
+    private static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Add services to the container.
+
+        builder.Services.AddControllers();
+
+        //add swagger
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
 
-var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddAuthentication("Bearer")
+            .AddJwtBearer("Bearer",options => {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
 
-// Add services to the container.
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
 
-builder.Services.AddControllers();
+                };
+            }
+        );
 
-//add swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+        string? connectionString = builder.Configuration.GetConnectionString("AuthConnection");
 
-
-string? connectionString = builder.Configuration.GetConnectionString("AuthConnection");
-
-builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseSqlServer(connectionString));
-
-// Repositories
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-// Services
-builder.Services.AddScoped<IUserService,UserService>();
+        builder.Services.AddDbContext<AuthDbContext>(options =>
+            options.UseSqlServer(connectionString));
 
 
-var app = builder.Build();
+        // Repositories
+        builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<IUtilityService, UtilityService>();
+        builder.Services.AddScoped<IJwtService, JwtService>();
 
-if (app.Environment.IsDevelopment()) {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+        // Services
+        builder.Services.AddScoped<IUserService, UserService>();
+
+
+        var app = builder.Build();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+
+        // Configure the HTTP request pipeline.
+
+        app.UseHttpsRedirection();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapControllers();
+
+        app.Run();
+    }
 }
-
-
-// Configure the HTTP request pipeline.
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
