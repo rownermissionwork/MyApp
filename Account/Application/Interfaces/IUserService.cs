@@ -1,4 +1,5 @@
-﻿using Account.Application.Dtos.User;
+﻿using Account.Application.Common;
+using Account.Application.Dtos.User;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace Account.Application.Interfaces
 {
     public interface IUserService
     {
-        Task<string> LoginAsync(UserLoginRequest request);
+        Task<Result<string>> LoginAsync(UserLoginRequest request);
     }
 }

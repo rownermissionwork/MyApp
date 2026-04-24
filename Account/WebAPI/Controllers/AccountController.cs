@@ -1,5 +1,6 @@
 ﻿using Account.Application.Dtos.User;
 using Account.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Buffers.Text;
@@ -20,14 +21,26 @@ namespace Account.API.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
         {
-            var result = await _userService.LoginAsync(request);
-            return Ok(result);
+            try
+            {
+                var result = await _userService.LoginAsync(request);
+                if (result.IsSuccess) {
+                    return Ok(result);
+                }
+                else {
+                    return StatusCode(StatusCodes.Status400BadRequest, result.Error);
+                }
+                
+            }
+            catch (Exception ex) {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+
         }
 
 
 
-    
-
+        [Authorize(Policy ="")]
         // GET: api/<AccountController>
         [HttpGet]
         public IEnumerable<string> Get()

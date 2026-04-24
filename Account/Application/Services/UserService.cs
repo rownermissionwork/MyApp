@@ -1,4 +1,5 @@
-﻿using Account.Application.Dtos.User;
+﻿using Account.Application.Common;
+using Account.Application.Dtos.User;
 using Account.Application.Interfaces;
 using Account.Domain.Interfaces;
 using System;
@@ -16,7 +17,7 @@ namespace Account.Application.Services
         private readonly IUtilityService _utilityRepository = utilityRepository;
         private readonly IJwtService _jwtService = jwtService;
 
-        public async Task<string> LoginAsync(UserLoginRequest request)
+        public async Task<Result<string>> LoginAsync(UserLoginRequest request)
         {
             try
             {
@@ -24,11 +25,18 @@ namespace Account.Application.Services
                 var result = await _userRepository.GetUserByUserNameAsync(request.UserName);
                 if (result is null)
                 {
-                    return "User not found";
+                    return Result<string>.Failure("user not found");
                 }
-                else if (!_utilityRepository.VerifyHashed(request.UserName,request.Password,result.PasswordHash))
+                else if (!_utilityRepository.VerifyHashed(request.UserName, request.Password, result.PasswordHash))
                 {
-                    return "Invalid password";
+                    return Result<string>.Failure("Invalid password");
+                }
+                else if (!result.IsActive)
+                {
+                    return Result<string>.Failure("user is not active");
+                }
+                else if (result.IsLocked) {
+                    return Result<string>.Failure("user account is locked");
                 }
                 var details = new {
                     userId = result.UserID,
@@ -38,8 +46,9 @@ namespace Account.Application.Services
                 
                 var token = _jwtService.GenerateToken(details);
 
-                return "OK";
+                return Result<string>.Success(token);
             }
+
             catch (Exception)
             {
                 throw;

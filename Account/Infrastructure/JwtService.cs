@@ -1,4 +1,5 @@
-﻿using Account.Domain.Interfaces;
+﻿using Account.Domain.Entities;
+using Account.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -26,22 +27,32 @@ namespace Account.Infrastructure
 
                 foreach (var prop in props)
                 {
-                    claims.Add(new Claim(prop.Name, prop.GetValue(detail)?.ToString() ?? string.Empty));
+                    if (prop.Name != "Role")
+                    {
+                        claims.Add(new Claim(prop.Name, prop.GetValue(detail)?.ToString() ?? string.Empty));
+                    }
+                    else {
+                        claims.Add(new Claim(ClaimTypes.Role, prop.GetValue(detail)?.ToString() ?? string.Empty));
+                    }
+                    
                 }
 
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"].ToString()));
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!.ToString()));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var tokenHandler = new JwtSecurityTokenHandler();
 
-                var token = new JwtSecurityToken(
-                    issuer: _config["Jwt:Issuer"],
-                    audience: _config["Jwt:Audience"],
-                    claims: claims,
-                    expires: DateTime.UtcNow.AddHours(2),
-                    signingCredentials: creds
-                );
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(claims),
+                    Audience = _config["Jwt:Audience"],
+                    Issuer = _config["Jwt:Issuer"],
+                    IssuedAt = DateTime.UtcNow,
+                    Expires = DateTime.UtcNow.AddHours(1),
+                    SigningCredentials = creds,
+                };
 
-                return new JwtSecurityTokenHandler().WriteToken(token);
+                return tokenHandler.WriteToken( tokenHandler.CreateToken(tokenDescriptor));
             }
             catch {
                 throw;
