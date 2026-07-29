@@ -6,21 +6,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Account.Domain.Entities
+namespace Account.Infrastructure.Persistence.Entities
 {
-
-    public class UserLogin
+    [Table("Users", Schema = "auth")]
+    public class Users
     {
-        
-        public int LoginID { get; set; }
+        [Key]
         public int UserID { get; set; }
-        public string ? UserName { get; set; }
-        public required string  PasswordHash { get; set; }
+        public required string Email { get; set; }
+        public required string MobileNumber { get; set; }
+        public required string PasswordHash { get; set; }
         public string? DeviceID { get; set; }
         public DateTime? LastLogin { get; set; }
         public int FailedAttempts { get; set; }
         public bool IsLocked { get; set; }
         public bool IsActive { get; set; }
-        public required string Role { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

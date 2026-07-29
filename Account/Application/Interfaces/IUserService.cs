@@ -11,5 +11,7 @@ namespace Account.Application.Interfaces
     public interface IUserService
     {
         Task<Result<string>> LoginAsync(UserLoginRequest request);
+        Task<Result<string>> RegisterAsync(RegisterRequest request,CancellationToken cancellationToken);
+        Task<List<UserRoleDto>> GetRoleAsync(CancellationToken cancellationToken = default);
     }
 }

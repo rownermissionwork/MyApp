@@ -12,6 +12,7 @@ using Microsoft.OpenApi;
 
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Cryptography.Xml;
+using Account.Infrastructure.Security;
 
 
 
@@ -85,7 +86,7 @@ internal class Program
 
         string? connectionString = builder.Configuration.GetConnectionString("AuthConnection");
 
-        builder.Services.AddDbContext<AuthDbContext>(options =>
+        builder.Services.AddDbContext<AccountDbContext>(options =>
             options.UseSqlServer(connectionString));
 
 
@@ -93,6 +94,7 @@ internal class Program
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IUtilityService, UtilityService>();
         builder.Services.AddScoped<IJwtService, JwtService>();
+        builder.Services.AddScoped<ISecretGeneratorService, SecretGeneratorService>();
 
         // Services
         builder.Services.AddScoped<IUserService, UserService>();

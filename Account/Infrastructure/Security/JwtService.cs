@@ -12,7 +12,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Account.Infrastructure
+namespace Account.Infrastructure.Security
 {
     public class JwtService(IConfiguration config) : IJwtService
     {
